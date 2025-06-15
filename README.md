@@ -37,8 +37,8 @@ A smart, real-time web-based system built using **YOLOv8** + **PaddleOCR** for d
 ## 🔧 Setup & Run
 1. 🔽 Clone the repo  
    ```bash
-   git clone https://github.com/yourusername/real-time-license-plate-detection-and-recognition.git
-   cd your-repo-name
+   git clone https://github.com/kenreddy23/real-time-license-plate-detection-and-recognition.git
+   cd real-time-license-plate-detection-and-recognition
    ```
 
 2. 📦 Install dependencies  
