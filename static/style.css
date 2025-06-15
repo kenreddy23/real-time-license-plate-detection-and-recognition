@@ -1,0 +1,44 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.upload-section {
+    margin: 20px 0;
+}
+
+#imageInput {
+    margin-right: 10px;
+}
+
+.results {
+    margin-top: 30px;
+}
+
+#imagePreview {
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+
+#imagePreview img {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+}
+
+.plate-result {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    display: inline-block;
+}

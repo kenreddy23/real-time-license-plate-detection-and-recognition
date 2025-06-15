@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Plate Detection System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px; */
+            /* background-color: #f5f5f5; */
+            background: #DA4453;  /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #89216B, #DA4453);  /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #89216B, #DA4453); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            width: 55rem;
+            padding: 1rem 2rem;
+            margin: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #d1d1d1;
+            border: none;
+            color: #1c1c1c;
+            padding: 1rem;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #c1c1c1;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* #stopWebcam {
+            background-color: #f44336;
+        }
+        #stopWebcam:hover {
+            background-color: #d32f2f;
+        }
+        #runDetection {
+            background-color: #2196F3;
+        }
+        #runDetection:hover {
+            background-color: #0b7dda;
+        }
+        #uploadMedia {
+            background-color: #ff9800;
+        }
+        #uploadMedia:hover {
+            background-color: #e68a00;
+        } */
+        .preview-container {
+            position: relative;
+            margin: 20px 0;
+            width: 100%;
+            background-color: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            min-height: 360px;
+        }
+
+        #preview {
+            width: 100%;
+            height: auto;
+            max-height: 480px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #uploadedImage {
+            width: 100%;
+            max-height: 480px;
+            display: none;
+            object-fit: contain;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .results-container {
+            margin-top: 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .results-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* #downloadCSV {
+            background-color: #9C27B0;
+        }
+        #downloadCSV:hover {
+            background-color: #7B1FA2;
+        }
+        #clearResults {
+            background-color: #FF5722;
+        }
+        #clearResults:hover {
+            background-color: #E64A19;
+        } */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>License Plate Detection System</h1>
+
+        <div class="button-container">
+            <button id="startWebcam">Start Webcam</button>
+            <button id="stopWebcam" disabled>Stop Webcam</button>
+            <button id="uploadMedia">Upload Media</button>
+            <input type="file" id="fileInput" accept="image/*">
+            <button id="runDetection" disabled>Run Detection</button>
+            <button id="toggleRealtime" disabled>Start Real-time Detection</button>
+        </div>
+
+        <div class="preview-container">
+            <video id="preview" autoplay playsinline></video>
+            <img id="uploadedImage" alt="Uploaded image">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing... Please wait</p>
+            </div>
+        </div>
+
+        <div class="status" id="status">
+            Status: Ready to start
+        </div>
+
+        <div class="results-container">
+            <div class="results-header">
+                <h2>Detected License Plates</h2>
+                <div class="results-buttons">
+                    <button id="downloadCSV">Download CSV</button>
+                    <button id="clearResults">Clear Results</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>S. No.</th>
+                        <th>License Plate</th>
+                        <th>Time Detected</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTable">
+                    <!-- Results will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const startWebcamBtn = document.getElementById('startWebcam');
+        const stopWebcamBtn = document.getElementById('stopWebcam');
+        const uploadMediaBtn = document.getElementById('uploadMedia');
+        const runDetectionBtn = document.getElementById('runDetection');
+        const toggleRealtimeBtn = document.getElementById('toggleRealtime');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const status = document.getElementById('status');
+        const resultsTable = document.getElementById('resultsTable');
+        const loading = document.getElementById('loading');
+        const downloadCSVBtn = document.getElementById('downloadCSV');
+        const clearResultsBtn = document.getElementById('clearResults');
+
+        // Global variables
+        let videoStream = null;
+        let mediaType = null; // 'webcam' or 'image'
+        let serialNumber = 1;
+        let currentFile = null;
+        let detectionResults = []; // Store results for CSV export
+        let isRealtimeDetection = false;
+        let realtimeDetectionInterval = null;
+        let isProcessing = false; // Flag to prevent multiple simultaneous detections
+        let detectedPlates = new Set(); // Store unique license plates
+
+        // Function to validate license plate format
+        function isValidLicensePlate(plate) {
+            // Remove any spaces or special characters
+            const cleanPlate = plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            
+            // Format 1: AA00AA0000 (2 letters, 2 numbers, 1 or 2 letters, 4 numbers)
+            const format1Regex = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/;
+            
+            // Format 2: 00AA0000AA or 00AA0000A (2 numbers, 2 letters, 4 numbers, followed by either 2 letters or 1 letter)
+            const format2Regex = /^[0-9]{2}[A-Z]{2}[0-9]{4}[A-Z]{1,2}$/;
+            
+            return format1Regex.test(cleanPlate) || format2Regex.test(cleanPlate);
+        }
+
+        // Start webcam
+        startWebcamBtn.addEventListener('click', async () => {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                preview.srcObject = videoStream;
+                preview.style.display = 'block';
+                uploadedImage.style.display = 'none';
+
+                startWebcamBtn.disabled = true;
+                stopWebcamBtn.disabled = false;
+                runDetectionBtn.disabled = false;
+                toggleRealtimeBtn.disabled = false;
+
+                mediaType = 'webcam';
+                status.textContent = 'Status: Webcam active';
+            } catch (error) {
+                status.textContent = `Status: Error accessing webcam - ${error.message}`;
+            }
+        });
+
+        // Stop webcam
+        stopWebcamBtn.addEventListener('click', () => {
+            stopRealtimeDetection();
+            
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                preview.srcObject = null;
+
+                startWebcamBtn.disabled = false;
+                stopWebcamBtn.disabled = true;
+                runDetectionBtn.disabled = true;
+                toggleRealtimeBtn.disabled = true;
+
+                mediaType = null;
+                status.textContent = 'Status: Webcam stopped';
+            }
+        });
+
+        // Upload media
+        uploadMediaBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                // Stop realtime detection if running
+                stopRealtimeDetection();
+                
+                currentFile = file;
+
+                // Stop webcam if running
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    preview.srcObject = null;
+                    startWebcamBtn.disabled = false;
+                    stopWebcamBtn.disabled = true;
+                }
+
+                // Display uploaded image
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImage.src = e.target.result;
+                    preview.style.display = 'none';
+                    uploadedImage.style.display = 'block';
+
+                    mediaType = 'image';
+                    runDetectionBtn.disabled = false;
+                    toggleRealtimeBtn.disabled = true;
+                    status.textContent = 'Status: Image loaded';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Run detection once
+        runDetectionBtn.addEventListener('click', async () => {
+            if (mediaType === 'webcam') {
+                // Capture frame from webcam
+                captureAndProcessFrame();
+            } else if (mediaType === 'image') {
+                // Use the stored file object
+                if (currentFile) {
+                    await processImage(currentFile);
+                }
+            }
+        });
+
+        // Toggle realtime detection
+        toggleRealtimeBtn.addEventListener('click', () => {
+            if (mediaType !== 'webcam') {
+                status.textContent = 'Status: Real-time detection only works with webcam';
+                return;
+            }
+
+            if (!isRealtimeDetection) {
+                startRealtimeDetection();
+            } else {
+                stopRealtimeDetection();
+            }
+        });
+
+        // Start realtime detection
+        function startRealtimeDetection() {
+            if (!isRealtimeDetection && mediaType === 'webcam') {
+                isRealtimeDetection = true;
+                toggleRealtimeBtn.textContent = 'Stop Real-time Detection';
+                runDetectionBtn.disabled = true;
+                status.textContent = 'Status: Real-time detection active';
+                
+                // Run detection immediately, then set interval
+                captureAndProcessFrame();
+                
+                // Set interval for continuous detection - adjust the interval as needed for performance
+                realtimeDetectionInterval = setInterval(() => {
+                    if (!isProcessing) {
+                        captureAndProcessFrame();
+                    }
+                }, 1000); // Process every 1 second - adjust as needed
+            }
+        }
+
+        // Stop realtime detection
+        function stopRealtimeDetection() {
+            if (isRealtimeDetection) {
+                isRealtimeDetection = false;
+                clearInterval(realtimeDetectionInterval);
+                toggleRealtimeBtn.textContent = 'Start Real-time Detection';
+                runDetectionBtn.disabled = false;
+                status.textContent = 'Status: Real-time detection stopped';
+            }
+        }
+
+        // Capture frame from webcam and process it
+        async function captureAndProcessFrame() {
+            if (mediaType !== 'webcam' || !preview.srcObject) return;
+            
+            // Capture frame from webcam
+            const canvas = document.createElement('canvas');
+            canvas.width = preview.videoWidth;
+            canvas.height = preview.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(preview, 0, 0, canvas.width, canvas.height);
+
+            // Convert to blob
+            canvas.toBlob(async (blob) => {
+                // Create a File object with explicit .jpg extension
+                const file = new File([blob], "webcam-capture.jpg", { type: "image/jpeg" });
+                await processImage(file);
+            }, 'image/jpeg');
+        }
+
+        // Process image for detection
+        async function processImage(file) {
+            if (isProcessing) return; // Prevent multiple simultaneous requests
+            
+            isProcessing = true;
+            const formData = new FormData();
+
+            // Ensure the file has a proper extension in its name
+            let fileName = file.name;
+            if (!fileName.match(/\.(jpg|jpeg|png)$/i)) {
+                // Add .jpg extension if missing
+                const nameParts = fileName.split('.');
+                if (nameParts.length > 1) {
+                    nameParts.pop(); // Remove the current extension
+                }
+                fileName = nameParts.join('.') + '.jpg';
+            }
+
+            // Create a new file object with the corrected name if needed
+            const fileToUpload = fileName !== file.name ?
+                new File([file], fileName, { type: file.type }) : file;
+
+            formData.append('file', fileToUpload);
+
+            if (!isRealtimeDetection) {
+                loading.style.display = 'block';
+                status.textContent = 'Status: Processing image...';
+                runDetectionBtn.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const responseText = await response.text();
+                try {
+                    const data = JSON.parse(responseText);
+
+                    if (data.error) {
+                        status.textContent = `Status: Error - ${data.error}`;
+                    } else {
+                        // Track counts for status update
+                        let totalPlatesDetected = 0;
+                        let validPlatesDetected = 0;
+                        let newValidPlatesDetected = 0;
+
+                        // Add results to table
+                        if (data.plates && data.plates.length > 0) {
+                            totalPlatesDetected = data.plates.length;
+                            
+                            data.plates.forEach(plate => {
+                                // Clean and validate the plate format
+                                const cleanPlate = plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                                
+                                if (isValidLicensePlate(cleanPlate)) {
+                                    validPlatesDetected++;
+                                    
+                                    // Only add the plate if it wasn't detected before
+                                    if (!detectedPlates.has(cleanPlate)) {
+                                        detectedPlates.add(cleanPlate);
+                                        newValidPlatesDetected++;
+                                        
+                                        const timeDetected = new Date().toLocaleTimeString();
+                                        const fullTimeDetected = new Date().toISOString();
+
+                                        // Add to results array for CSV export
+                                        detectionResults.push({
+                                            serialNumber: serialNumber,
+                                            licensePlate: cleanPlate,
+                                            timeDetected: timeDetected,
+                                            fullTimeDetected: fullTimeDetected
+                                        });
+
+                                        // Add to table
+                                        const row = resultsTable.insertRow();
+
+                                        const cellNum = row.insertCell(0);
+                                        const cellPlate = row.insertCell(1);
+                                        const cellTime = row.insertCell(2);
+
+                                        cellNum.textContent = serialNumber++;
+                                        cellPlate.textContent = cleanPlate;
+                                        cellTime.textContent = timeDetected;
+                                        
+                                        // Scroll to the bottom of the table to show the latest entry
+                                        resultsTable.parentElement.scrollTop = resultsTable.parentElement.scrollHeight;
+                                    }
+                                }
+                            });
+                        }
+
+                        // Update status with appropriate information
+                        if (!isRealtimeDetection) {
+                            status.textContent = `Status: Detection complete. Found ${totalPlatesDetected} plates, ${validPlatesDetected} valid format(s).`;
+                        } else {
+                            if (newValidPlatesDetected > 0) {
+                                status.textContent = `Status: Real-time detection active. Found ${newValidPlatesDetected} new valid license plate(s).`;
+                            } else if (validPlatesDetected > 0) {
+                                status.textContent = `Status: Real-time detection active. Detected ${validPlatesDetected} valid plates (already recorded).`;
+                            } else if (totalPlatesDetected > 0) {
+                                status.textContent = `Status: Real-time detection active. Detected ${totalPlatesDetected} plates, but none in valid format.`;
+                            } else {
+                                status.textContent = `Status: Real-time detection active. No license plates detected.`;
+                            }
+                        }
+                    }
+                } catch (parseError) {
+                    status.textContent = `Status: Error parsing response - ${parseError.message}`;
+                }
+            } catch (error) {
+                status.textContent = `Status: Error - ${error.message}`;
+                if (isRealtimeDetection) {
+                    stopRealtimeDetection();
+                }
+            } finally {
+                loading.style.display = 'none';
+                if (!isRealtimeDetection) {
+                    runDetectionBtn.disabled = false;
+                }
+                isProcessing = false;
+            }
+        }
+
+        // Download results as CSV
+        downloadCSVBtn.addEventListener('click', () => {
+            if (detectionResults.length === 0) {
+                status.textContent = 'Status: No results to download';
+                return;
+            }
+
+            // Create CSV content
+            const csvHeader = 'S. No.,License Plate,Time Detected\n';
+            const csvContent = detectionResults.map(result =>
+                `${result.serialNumber},${result.licensePlate},"${result.timeDetected}"`
+            ).join('\n');
+
+            const fullCSV = csvHeader + csvContent;
+
+            // Create download link
+            const blob = new Blob([fullCSV], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            // Format date and time in Indian Standard Time as requested
+            function getIndianTime() {
+                // Create date object for current time
+                const now = new Date();
+
+                // Convert to Indian Standard Time (UTC+5:30)
+                const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+
+                // Format the date and time components
+                const year = istTime.getUTCFullYear();
+                const month = String(istTime.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(istTime.getUTCDate()).padStart(2, '0');
+                const hours = String(istTime.getUTCHours()).padStart(2, '0');
+                const minutes = String(istTime.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(istTime.getUTCSeconds()).padStart(2, '0');
+
+                // Format as requested: "license_plates_2025_04_05;17:22:24.csv"
+                return `license_plates_${year}_${month}_${day};${hours}:${minutes}:${seconds}.csv`;
+            }
+
+            // Set download attributes with Indian time
+            link.setAttribute('href', url);
+            link.setAttribute('download', getIndianTime());
+            link.style.visibility = 'hidden';
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            status.textContent = 'Status: CSV downloaded successfully';
+        });
+
+        // Clear results table
+        clearResultsBtn.addEventListener('click', () => {
+            // Clear table
+            resultsTable.innerHTML = '';
+
+            // Reset variables
+            detectionResults = [];
+            serialNumber = 1;
+            detectedPlates.clear(); // Clear the set of detected plates
+
+            status.textContent = 'Status: Results cleared';
+        });
+    </script>
+</body>
+
+</html>
