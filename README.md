@@ -14,7 +14,7 @@ A smart, real-time web-based system built using **YOLOv8** + **PaddleOCR** for d
 ---
 
 ## 🚀 Features
-- 📸 Upload an image and detect number plates in real-time.
+- 📸 Upload an image/video or start webcam to detect number plates in real-time.
 - 🧽 Auto-enhancement of plates before OCR.
 - 🧾 Smart validation & correction of state codes (e.g., MH, DL, KA).
 - 📤 Accepts `.jpg`, `.jpeg`, `.png` image files.
@@ -37,7 +37,7 @@ A smart, real-time web-based system built using **YOLOv8** + **PaddleOCR** for d
 ## 🔧 Setup & Run
 1. 🔽 Clone the repo  
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
+   git clone https://github.com/yourusername/real-time-license-plate-detection-and-recognition.git
    cd your-repo-name
    ```
 
