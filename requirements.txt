@@ -1,0 +1,7 @@
+flask
+werkzeug
+ultralytics
+paddleocr
+opencv-python
+numpy
+difflib
